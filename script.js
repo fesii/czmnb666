@@ -1,5 +1,6 @@
 const content = document.querySelector("#content");
 const timeTabs = document.querySelector("#time-tabs");
+const copyAllButton = document.querySelector("#copy-all-prices");
 const sectionTemplate = document.querySelector("#section-template");
 const groupTemplate = document.querySelector("#group-template");
 const itemTemplate = document.querySelector("#item-template");
@@ -47,23 +48,45 @@ function collectSectionItems(section) {
   return items;
 }
 
-function buildPriceTemplate(sectionTitle) {
+function collectAllItemsByLabel(sectionTitle = "") {
   const linesByLabel = new Map();
 
   (appData.pages || []).forEach((page) => {
-    const section = (page.sections || []).find((entry) => entry.title === sectionTitle);
-    if (!section) return;
+    (page.sections || []).forEach((section) => {
+      if (sectionTitle && section.title !== sectionTitle) return;
 
-    collectSectionItems(section).forEach((item) => {
-      if (!item.label) return;
-      if (!linesByLabel.has(item.label)) linesByLabel.set(item.label, []);
-      linesByLabel.get(item.label).push(`${item.label}${page.time}/${item.value}`);
+      collectSectionItems(section).forEach((item) => {
+        if (!item.label) return;
+        if (!linesByLabel.has(item.label)) linesByLabel.set(item.label, []);
+        linesByLabel.get(item.label).push(`${page.time}${item.label}/${item.value}`);
+      });
     });
   });
+
+  return linesByLabel;
+}
+
+function buildPriceTemplate(sectionTitle) {
+  const linesByLabel = collectAllItemsByLabel(sectionTitle);
 
   return Array.from(linesByLabel.values())
     .flat()
     .join("\n");
+}
+
+function buildAllPriceTemplate() {
+  const linesByLabel = collectAllItemsByLabel();
+  return Array.from(linesByLabel.values())
+    .flat()
+    .join("\n");
+}
+
+async function copyToClipboard(text, button, defaultText) {
+  await navigator.clipboard.writeText(text);
+  button.textContent = "已复制";
+  setTimeout(() => {
+    button.textContent = defaultText;
+  }, 1200);
 }
 
 function renderSections(sections) {
@@ -82,11 +105,7 @@ function renderSections(sections) {
     copyButton.textContent = "复制价格模板";
     copyButton.addEventListener("click", async () => {
       const template = buildPriceTemplate(section.title);
-      await navigator.clipboard.writeText(template || section.copyText || "");
-      copyButton.textContent = "已复制";
-      setTimeout(() => {
-        copyButton.textContent = "复制价格模板";
-      }, 1200);
+      await copyToClipboard(template || section.copyText || "", copyButton, "复制价格模板");
     });
 
     section.groups.forEach((group) => {
@@ -127,6 +146,10 @@ function renderPage() {
   setText("#notice-text", page.notice || "");
   renderSections(page.sections || []);
 }
+
+copyAllButton.addEventListener("click", async () => {
+  await copyToClipboard(buildAllPriceTemplate(), copyAllButton, "复制全部价格模板");
+});
 
 loadData()
   .then((data) => {

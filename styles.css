@@ -138,6 +138,12 @@ h1 {
   box-shadow: 0 8px 18px rgba(39, 89, 141, 0.24);
 }
 
+.copy-all-bar {
+  display: flex;
+  justify-content: center;
+  margin: 0 0 18px;
+}
+
 .content {
   display: grid;
   gap: 28px;
