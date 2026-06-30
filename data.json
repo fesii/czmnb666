@@ -21,16 +21,16 @@
                   "value": "0.875"
                 },
                 {
-                  "label": "渠道B",
-                  "value": "0.905"
+                  "label": "加速",
+                  "value": "0.88"
                 },
                 {
-                  "label": "渠道C",
-                  "value": "0.91"
+                  "label": "超速",
+                  "value": "0.885"
                 },
                 {
-                  "label": "渠道D",
-                  "value": "0.925"
+                  "label": "高速",
+                  "value": "0.89"
                 },
                 {
                   "label": "渠道E",
