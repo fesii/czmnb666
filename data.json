@@ -10,7 +10,7 @@
         {
           "title": "小刀",
           "subtitle": "网页入口",
-          "linkText": "https://example.com/xiaodao",
+          "linkText": "https://el5.q8z6i1l9d6o8e.top/admin",
           "accent": "blue",
           "groups": [
             {
@@ -33,12 +33,12 @@
                   "value": "0.89"
                 },
                 {
-                  "label": "渠道E",
-                  "value": "0.935"
+                  "label": "极速",
+                  "value": "0.895"
                 },
                 {
-                  "label": "渠道F",
-                  "value": "0.95",
+                  "label": "秒拉",
+                  "value": "0.9",
                   "highlight": true
                 }
               ]
@@ -47,60 +47,34 @@
               "name": "钱包特殊",
               "items": [
                 {
-                  "label": "渠道TA",
+                  "label": "怪额",
                   "value": "0.955"
                 },
                 {
-                  "label": "渠道TB",
+                  "label": "超怪",
                   "value": "0.965"
                 },
                 {
-                  "label": "Z1000",
-                  "value": "0.95"
+                  "label": "大额",
+                  "value": "0.91"
                 }
               ]
-            }
-          ],
-          "copyText": "小刀 00:00 价格模板"
-        },
-        {
-          "title": "新星悦",
-          "subtitle": "网页 备用 Win版",
-          "linkText": "https://example.com/xxy",
-          "accent": "blue",
-          "groups": [
+            },
             {
-              "name": "自动点券",
+              "name": "微信通道",
               "items": [
                 {
-                  "label": "微信点额",
-                  "value": "0.999"
+                  "label": "新价格",
+                  "value": "0.00"
                 },
                 {
-                  "label": "微信小额",
-                  "value": "0.999"
-                },
-                {
-                  "label": "微信固额",
-                  "value": "0.999"
-                },
-                {
-                  "label": "微信通额",
-                  "value": "0.999"
-                },
-                {
-                  "label": "微信速额",
-                  "value": "0.999"
-                },
-                {
-                  "label": "钱包直拉",
-                  "value": "0.999",
-                  "highlight": true
+                  "label": "新价格",
+                  "value": "0.00"
                 }
               ]
             }
           ],
-          "copyText": "新星悦 00:00 价格代码"
+          "copyText": "小刀 00:00 价格模板\n"
         }
       ]
     }
