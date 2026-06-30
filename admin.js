@@ -15,6 +15,9 @@ const githubTokenInput = document.querySelector("#github-token");
 const addTimeButton = document.querySelector("#add-time");
 const copyTimeButton = document.querySelector("#copy-time");
 const deleteTimeButton = document.querySelector("#delete-time");
+const pastePricesInput = document.querySelector("#paste-prices");
+const importPricesButton = document.querySelector("#import-prices");
+const clearImportButton = document.querySelector("#clear-import");
 const pageTemplate = document.querySelector("#page-template");
 const sectionTemplate = document.querySelector("#section-editor-template");
 const groupTemplate = document.querySelector("#group-editor-template");
@@ -24,6 +27,20 @@ let appData = null;
 let selectedTime = "";
 let fileHandle = null;
 let githubFileSha = "";
+
+const GROUP_BY_LABEL = new Map([
+  ["普通", "钱包整百"],
+  ["加速", "钱包整百"],
+  ["超速", "钱包整百"],
+  ["高速", "钱包整百"],
+  ["极速", "钱包整百"],
+  ["秒拉", "钱包整百"],
+  ["怪额", "钱包特殊"],
+  ["超怪", "钱包特殊"],
+  ["大额", "钱包特殊"]
+]);
+
+const GROUP_ORDER = ["钱包整百", "钱包特殊", "微信通道", "未分组"];
 
 async function loadDefaultData() {
   const response = await fetch(`./data.json?v=${Date.now()}`, { cache: "no-store" });
@@ -90,6 +107,93 @@ async function githubRequest(url, options = {}) {
 
 function getSelectedPage() {
   return appData.pages.find((page) => page.time === selectedTime) || appData.pages[0];
+}
+
+function normalizePrice(rawValue) {
+  if (rawValue.includes(".")) return String(Number(rawValue));
+  return String(Number(`0.${rawValue}`));
+}
+
+function getGroupName(label) {
+  if (GROUP_BY_LABEL.has(label)) return GROUP_BY_LABEL.get(label);
+  if (label.startsWith("微信")) return "微信通道";
+  return "未分组";
+}
+
+function detectSectionTitle(text) {
+  const cleanText = text.replace(/[（(][^）)]*[）)]/g, "");
+  const lines = cleanText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+  return lines.find((line) => /[\u4e00-\u9fa5A-Za-z]/.test(line) && !/\d/.test(line)) || "";
+}
+
+function parsePastedPrices(text) {
+  const cleanText = text
+    .replace(/[（(][^）)]*[）)]/g, " ")
+    .replace(/^\s*\d{1,2}(?:\.\d{1,2})?\s*$/gm, " ");
+  const pattern = /([\u4e00-\u9fa5A-Za-z]+)\s*(\d+(?:\.\d+)?)/g;
+  const groups = new Map();
+  let match = pattern.exec(cleanText);
+
+  while (match) {
+    const label = match[1].trim();
+    const value = normalizePrice(match[2]);
+    const groupName = getGroupName(label);
+    if (!groups.has(groupName)) groups.set(groupName, []);
+    groups.get(groupName).push({
+      label,
+      value,
+      highlight: label === "秒拉"
+    });
+    match = pattern.exec(cleanText);
+  }
+
+  return GROUP_ORDER
+    .filter((name) => groups.has(name))
+    .map((name) => ({
+      name,
+      items: groups.get(name)
+    }));
+}
+
+function importPastedPrices() {
+  const page = getSelectedPage();
+  if (!page) {
+    setStatus("请先新增或选择一个时间。");
+    return;
+  }
+
+  const text = pastePricesInput.value.trim();
+  if (!text) {
+    setStatus("请先粘贴价格文字。");
+    return;
+  }
+
+  const groups = parsePastedPrices(text);
+  if (!groups.length) {
+    setStatus("没有识别到价格，请检查格式，例如：普通875 加速88。");
+    return;
+  }
+
+  const sectionTitle = detectSectionTitle(text) || page.sections?.[0]?.title || "导入价格";
+  page.sections = page.sections || [];
+  let section = page.sections.find((entry) => entry.title === sectionTitle);
+  if (!section) {
+    section = {
+      title: sectionTitle,
+      subtitle: "网页入口",
+      linkText: "",
+      accent: "blue",
+      groups: [],
+      copyText: ""
+    };
+    page.sections.push(section);
+  }
+
+  section.groups = groups;
+  page.updatedAt = page.updatedAt || page.time;
+  page.notice = page.notice || `${page.time} 价格已更新`;
+  render();
+  setStatus(`已识别 ${groups.reduce((sum, group) => sum + group.items.length, 0)} 个价格，并保存到 ${page.time} 的 ${sectionTitle}。`);
 }
 
 function bindInput(element, object, field, afterChange) {
@@ -372,6 +476,12 @@ deleteTimeButton.addEventListener("click", () => {
   selectedTime = appData.pages[0]?.time || "";
   if (appData.activeTime === page.time) appData.activeTime = selectedTime;
   render();
+});
+
+importPricesButton.addEventListener("click", importPastedPrices);
+
+clearImportButton.addEventListener("click", () => {
+  pastePricesInput.value = "";
 });
 
 loadDefaultData()

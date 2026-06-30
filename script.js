@@ -34,6 +34,38 @@ function renderTimeTabs(pages, activeTime) {
   });
 }
 
+function collectSectionItems(section) {
+  const items = [];
+  (section.groups || []).forEach((group) => {
+    (group.items || []).forEach((item) => {
+      items.push({
+        label: item.label || "",
+        value: item.value || ""
+      });
+    });
+  });
+  return items;
+}
+
+function buildPriceTemplate(sectionTitle) {
+  const linesByLabel = new Map();
+
+  (appData.pages || []).forEach((page) => {
+    const section = (page.sections || []).find((entry) => entry.title === sectionTitle);
+    if (!section) return;
+
+    collectSectionItems(section).forEach((item) => {
+      if (!item.label) return;
+      if (!linesByLabel.has(item.label)) linesByLabel.set(item.label, []);
+      linesByLabel.get(item.label).push(`${item.label}${page.time}/${item.value}`);
+    });
+  });
+
+  return Array.from(linesByLabel.values())
+    .flat()
+    .join("\n");
+}
+
 function renderSections(sections) {
   content.replaceChildren();
   sections.forEach((section) => {
@@ -47,11 +79,13 @@ function renderSections(sections) {
     panel.dataset.accent = section.accent || "blue";
     title.textContent = section.title;
     meta.textContent = [section.subtitle, section.linkText].filter(Boolean).join("  ");
+    copyButton.textContent = "复制价格模板";
     copyButton.addEventListener("click", async () => {
-      await navigator.clipboard.writeText(section.copyText || "");
+      const template = buildPriceTemplate(section.title);
+      await navigator.clipboard.writeText(template || section.copyText || "");
       copyButton.textContent = "已复制";
       setTimeout(() => {
-        copyButton.textContent = "复制";
+        copyButton.textContent = "复制价格模板";
       }, 1200);
     });
 

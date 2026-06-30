@@ -82,6 +82,31 @@
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
 }
 
+.import-card {
+  grid-template-columns: 1fr 190px;
+}
+
+.import-actions {
+  display: grid;
+  align-content: end;
+  gap: 10px;
+}
+
+.import-actions button {
+  min-height: 43px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--blue-dark);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.import-actions #clear-import {
+  background: #f1f3f6;
+  color: var(--text);
+}
+
 .github-card .token-field {
   grid-column: span 2;
 }
@@ -154,6 +179,7 @@
 
 @media (max-width: 820px) {
   .admin-card,
+  .import-card,
   .group-editor,
   .item-editor {
     grid-template-columns: 1fr;

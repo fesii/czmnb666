@@ -70,6 +70,17 @@
         <button id="delete-time" type="button">删除当前时间</button>
       </section>
 
+      <section class="admin-card import-card">
+        <label>
+          粘贴价格文字
+          <textarea id="paste-prices" rows="8" placeholder="例如：&#10;7.1&#10;小刀&#10;普通875 加速88 超速885 高速89 极速895 秒拉90 怪额955&#10;超怪965&#10;&#10;大额91（钱包通道 限额1000）&#10;微信通额885（100-1000）"></textarea>
+        </label>
+        <div class="import-actions">
+          <button id="import-prices" type="button">识别到当前时间</button>
+          <button id="clear-import" type="button">清空</button>
+        </div>
+      </section>
+
       <section id="editor" class="content" aria-live="polite"></section>
     </main>
 
