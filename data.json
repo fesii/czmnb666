@@ -85,6 +85,62 @@
           "copyText": "小刀 00:00 价格模板\n"
         }
       ]
+    },
+    {
+      "time": "9:50",
+      "updatedAt": "9:50",
+      "notice": "9:50 价格已更新",
+      "sections": [
+        {
+          "title": "修改费率",
+          "subtitle": "网页入口",
+          "linkText": "",
+          "accent": "blue",
+          "groups": [
+            {
+              "name": "钱包整百",
+              "items": [
+                {
+                  "label": "普通",
+                  "value": "0.915",
+                  "highlight": false
+                },
+                {
+                  "label": "加速",
+                  "value": "0.92",
+                  "highlight": false
+                },
+                {
+                  "label": "超速",
+                  "value": "0.925",
+                  "highlight": false
+                },
+                {
+                  "label": "极速",
+                  "value": "0.93",
+                  "highlight": false
+                },
+                {
+                  "label": "秒拉",
+                  "value": "0.94",
+                  "highlight": true
+                }
+              ]
+            },
+            {
+              "name": "未分组",
+              "items": [
+                {
+                  "label": "直拉",
+                  "value": "0.935",
+                  "highlight": false
+                }
+              ]
+            }
+          ],
+          "copyText": ""
+        }
+      ]
     }
   ]
 }
