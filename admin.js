@@ -123,7 +123,12 @@ function getGroupName(label) {
 function detectSectionTitle(text) {
   const cleanText = text.replace(/[（(][^）)]*[）)]/g, "");
   const lines = cleanText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
-  return lines.find((line) => /[\u4e00-\u9fa5A-Za-z]/.test(line) && !/\d/.test(line)) || "";
+  const ignoredTitles = new Set(["修改费率", "费率", "价格", "改价", "公告"]);
+  return lines.find((line) => (
+    /[\u4e00-\u9fa5A-Za-z]/.test(line)
+    && !/\d/.test(line)
+    && !ignoredTitles.has(line)
+  )) || "";
 }
 
 function parsePastedPrices(text) {
@@ -174,14 +179,25 @@ function createEmptySection(title) {
   };
 }
 
-function findTemplateSection(title, currentPage) {
-  const exactSections = (appData.pages || [])
-    .filter((page) => page !== currentPage)
-    .flatMap((page) => page.sections || [])
-    .filter((section) => section.title === title && countSectionItems(section) > 0)
-    .sort((a, b) => countSectionItems(b) - countSectionItems(a));
+function isSameSectionTitle(left, right) {
+  if (!left || !right) return false;
+  return left === right || left.includes(right) || right.includes(left);
+}
 
-  if (exactSections.length) return cloneData(exactSections[0]);
+function getPreviousPage(currentPage) {
+  const pages = appData.pages || [];
+  const index = pages.indexOf(currentPage);
+  if (index > 0) return pages[index - 1];
+  return pages.find((page) => page !== currentPage && countSectionItems({ groups: (page.sections || []).flatMap((section) => section.groups || []) }) > 0);
+}
+
+function findTemplateSection(currentPage) {
+  const previousPage = getPreviousPage(currentPage);
+  const previousSection = (previousPage?.sections || [])
+    .filter((section) => countSectionItems(section) > 0)
+    .sort((a, b) => countSectionItems(b) - countSectionItems(a))[0];
+
+  if (previousSection) return cloneData(previousSection);
 
   const anySection = (appData.pages || [])
     .filter((page) => page !== currentPage)
@@ -189,7 +205,21 @@ function findTemplateSection(title, currentPage) {
     .filter((section) => countSectionItems(section) > 0)
     .sort((a, b) => countSectionItems(b) - countSectionItems(a))[0];
 
-  return anySection ? cloneData(anySection) : createEmptySection(title);
+  return anySection ? cloneData(anySection) : createEmptySection("导入价格");
+}
+
+function findImportedForItem(itemLabel, importedByLabel) {
+  if (importedByLabel.has(itemLabel)) {
+    return [itemLabel, importedByLabel.get(itemLabel)];
+  }
+
+  for (const [label, imported] of importedByLabel.entries()) {
+    if (itemLabel.includes(label) || label.includes(itemLabel)) {
+      return [label, imported];
+    }
+  }
+
+  return ["", null];
 }
 
 function mergeImportedGroups(section, importedGroups) {
@@ -207,9 +237,9 @@ function mergeImportedGroups(section, importedGroups) {
   section.groups = section.groups || [];
   section.groups.forEach((group) => {
     group.items = (group.items || []).map((item) => {
-      const imported = importedByLabel.get(item.label);
+      const [importedLabel, imported] = findImportedForItem(item.label, importedByLabel);
       if (!imported) return item;
-      usedLabels.add(item.label);
+      usedLabels.add(importedLabel);
       return {
         ...item,
         value: imported.value,
@@ -258,13 +288,20 @@ function importPastedPrices() {
     return;
   }
 
-  const sectionTitle = detectSectionTitle(text) || page.sections?.[0]?.title || "导入价格";
   page.sections = page.sections || [];
-  let section = page.sections.find((entry) => entry.title === sectionTitle);
+  let section = page.sections.find((entry) => countSectionItems(entry) > 0) || page.sections[0];
   if (!section) {
-    section = findTemplateSection(sectionTitle, page);
-    section.title = sectionTitle;
+    section = findTemplateSection(page);
     page.sections.push(section);
+  } else {
+    const templateSection = findTemplateSection(page);
+    if (countSectionItems(templateSection) > countSectionItems(section)) {
+      mergeImportedGroups(templateSection, section.groups || []);
+      const sectionIndex = page.sections.indexOf(section);
+      templateSection.title = section.title;
+      page.sections[sectionIndex] = templateSection;
+      section = templateSection;
+    }
   }
 
   mergeImportedGroups(section, groups);
