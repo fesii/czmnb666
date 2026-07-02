@@ -39,7 +39,7 @@
                 {
                   "label": "秒拉",
                   "value": "0.9",
-                  "highlight": true
+                  "highlight": false
                 }
               ]
             },
@@ -124,7 +124,7 @@
                 {
                   "label": "秒拉",
                   "value": "0.905",
-                  "highlight": true
+                  "highlight": false
                 }
               ]
             },
@@ -209,7 +209,7 @@
                 {
                   "label": "秒拉",
                   "value": "0.915",
-                  "highlight": true
+                  "highlight": false
                 }
               ]
             },
